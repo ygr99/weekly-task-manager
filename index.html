@@ -184,7 +184,7 @@
         return array[Math.floor(Math.random() * array.length)];
       }
 
-      function createTaskItem(taskText) {
+      function createTaskItem(taskText, isChecked) {
         const taskItem = document.createElement("li");
         taskItem.style.setProperty(
           "--bg-color",
@@ -198,6 +198,7 @@
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         checkbox.className = "icon";
+        checkbox.checked = isChecked;
 
         const taskTextSpan = document.createElement("span");
         taskTextSpan.textContent = taskText;
@@ -215,6 +216,10 @@
           event.stopPropagation();
           console.log("delete");
           taskItem.remove();
+          saveTasks();
+        });
+
+        checkbox.addEventListener("change", function () {
           saveTasks();
         });
 
@@ -260,7 +265,7 @@
       }
 
       function addTask(taskList, taskText) {
-        const taskItem = createTaskItem(taskText);
+        const taskItem = createTaskItem(taskText, false);
         taskList.appendChild(taskItem);
         saveTasks();
       }
@@ -285,10 +290,7 @@
         Object.keys(tasks).forEach((listId) => {
           const taskList = document.getElementById(listId);
           tasks[listId].forEach((task) => {
-            const taskItem = createTaskItem(task.text);
-            if (task.checked) {
-              taskItem.querySelector("input").checked = true;
-            }
+            const taskItem = createTaskItem(task.text, task.checked);
             taskList.appendChild(taskItem);
           });
         });
