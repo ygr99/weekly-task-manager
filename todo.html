@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>8宫格周视图</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: #fff;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background-color: #fff;
+        padding: 20px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .header p {
+        margin: 5px 0 0;
+        color: #888;
+      }
+      .grid-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        padding: 20px;
+      }
+      .task-section {
+        background-color: #f9f9f9;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        position: relative;
+      }
+      .task-section h2 {
+        font-size: 18px;
+        margin: 0 0 10px;
+      }
+      .task-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .task-list li {
+        display: flex;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #ddd;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        border-radius: 5px;
+        margin-bottom: 5px;
+      }
+      .task-list li:last-child {
+        border-bottom: none;
+      }
+      .task-list li span {
+        margin-right: 10px;
+      }
+      .task-list li .icon {
+        color: #4caf50;
+        margin-right: 5px;
+      }
+      .add-task {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        cursor: pointer;
+        font-size: 20px;
+        color: #4caf50;
+      }
+      .task-input {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      .delete-task {
+        cursor: pointer;
+        color: #f44336;
+        margin-left: 20px;
+        display: block;
+      }
+      .today-marker {
+        color: red;
+        font-size: 12px;
+        margin-left: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Dono</h1>
+        <p id="week-info"></p>
+      </div>
+      <div class="grid-container">
+        <div class="task-section">
+          <h2>本周任务</h2>
+          <span class="add-task">+</span>
+          <ul class="task-list" id="week-tasks"></ul>
+        </div>
+        <div class="task-section">
+          <h2 id="monday-date"></h2>
+          <span class="add-task">+</span>
+          <ul class="task-list" id="monday-tasks"></ul>
+        </div>
+        <div class="task-section">
+          <h2 id="tuesday-date"></h2>
+          <span class="add-task">+</span>
+          <ul class="task-list" id="tuesday-tasks"></ul>
+        </div>
+        <div class="task-section">
+          <h2 id="wednesday-date"></h2>
+          <span class="add-task">+</span>
+          <ul class="task-list" id="wednesday-tasks"></ul>
+        </div>
+        <div class="task-section">
+          <h2 id="thursday-date"></h2>
+          <span class="add-task">+</span>
+          <ul class="task-list" id="thursday-tasks"></ul>
+        </div>
+        <div class="task-section">
+          <h2 id="friday-date"></h2>
+          <span class="add-task">+</span>
+          <ul class="task-list" id="friday-tasks"></ul>
+        </div>
+        <div class="task-section">
+          <h2 id="saturday-date"></h2>
+          <span class="add-task">+</span>
+          <ul class="task-list" id="saturday-tasks"></ul>
+        </div>
+        <div class="task-section">
+          <h2 id="sunday-date"></h2>
+          <span class="add-task">+</span>
+          <ul class="task-list" id="sunday-tasks"></ul>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const colorScheme = {
+        backgrounds: [
+          "#F2F2F2",
+          "#F0EDE0",
+          "#FFE9D4",
+          "#FEEAF2",
+          "#FFFCBF",
+          "#D1FFF0",
+          "#CCF0FF",
+          "#E5DAFF",
+          "#FFD3D3",
+        ],
+        textColors: [
+          "#262626",
+          "#A2A4A4",
+          "#967442",
+          "#EC7F26",
+          "#D23F95",
+          "#E9BB2B",
+          "#26A748",
+          "#4181D6",
+          "#6E5FD9",
+          "#D2474C",
+        ],
+      };
+
+      function getRandomColor(array) {
+        return array[Math.floor(Math.random() * array.length)];
+      }
+
+      function createTaskItem(taskText) {
+        const taskItem = document.createElement("li");
+        taskItem.style.setProperty(
+          "--bg-color",
+          getRandomColor(colorScheme.backgrounds)
+        );
+        taskItem.style.setProperty(
+          "--text-color",
+          getRandomColor(colorScheme.textColors)
+        );
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "icon";
+
+        const taskTextSpan = document.createElement("span");
+        taskTextSpan.textContent = taskText;
+
+        const deleteButton = document.createElement("span");
+        deleteButton.className = "delete-task";
+        deleteButton.textContent = "×";
+        deleteButton.style.display = "block";
+
+        taskItem.appendChild(checkbox);
+        taskItem.appendChild(taskTextSpan);
+        // taskItem.appendChild(deleteButton);
+
+        deleteButton.addEventListener("click", function (event) {
+          event.stopPropagation();
+          console.log("delete");
+          taskItem.remove();
+          saveTasks();
+        });
+
+        taskTextSpan.addEventListener("dblclick", function () {
+          const originalText = this.textContent;
+          this.innerHTML = `<input type="text" class="task-input" value="${originalText}">`;
+          const editInput = this.querySelector("input");
+          editInput.focus();
+
+          editInput.addEventListener("keypress", function (event) {
+            if (event.key === "Enter") {
+              const newText = editInput.value.trim();
+              if (newText) {
+                taskTextSpan.textContent = newText;
+                saveTasks();
+              } else {
+                taskTextSpan.textContent = originalText;
+              }
+            }
+          });
+
+          editInput.addEventListener("blur", function () {
+            const newText = editInput.value.trim();
+            if (newText) {
+              taskTextSpan.textContent = newText;
+              saveTasks();
+            } else {
+              taskTextSpan.textContent = originalText;
+            }
+          });
+
+          editInput.addEventListener("keydown", function (event) {
+            if (event.key === "Backspace" || event.key === "Delete") {
+              if (editInput.value.trim() === "") {
+                taskItem.remove();
+                saveTasks();
+              }
+            }
+          });
+        });
+
+        return taskItem;
+      }
+
+      function addTask(taskList, taskText) {
+        const taskItem = createTaskItem(taskText);
+        taskList.appendChild(taskItem);
+        saveTasks();
+      }
+
+      function saveTasks() {
+        const tasks = {};
+        document.querySelectorAll(".task-list").forEach((taskList) => {
+          const listId = taskList.id;
+          const listTasks = [];
+          taskList.querySelectorAll("li").forEach((taskItem) => {
+            const taskText = taskItem.querySelector("span").textContent;
+            const isChecked = taskItem.querySelector("input").checked;
+            listTasks.push({ text: taskText, checked: isChecked });
+          });
+          tasks[listId] = listTasks;
+        });
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+      }
+
+      function loadTasks() {
+        const tasks = JSON.parse(localStorage.getItem("tasks")) || {};
+        Object.keys(tasks).forEach((listId) => {
+          const taskList = document.getElementById(listId);
+          tasks[listId].forEach((task) => {
+            const taskItem = createTaskItem(task.text);
+            if (task.checked) {
+              taskItem.querySelector("input").checked = true;
+            }
+            taskList.appendChild(taskItem);
+          });
+        });
+      }
+
+      document.querySelectorAll(".add-task").forEach((addTaskButton) => {
+        addTaskButton.addEventListener("click", function () {
+          const taskSection = this.parentElement;
+          const taskList = taskSection.querySelector(".task-list");
+          const taskInput = document.createElement("input");
+          taskInput.type = "text";
+          taskInput.placeholder = "输入新任务";
+          taskInput.className = "task-input";
+          taskSection.appendChild(taskInput);
+
+          taskInput.addEventListener("keypress", function (event) {
+            if (event.key === "Enter") {
+              const taskText = taskInput.value.trim();
+              if (taskText) {
+                addTask(taskList, taskText);
+                taskInput.remove();
+              }
+            }
+          });
+        });
+      });
+
+      // 获取本周的星期一
+      function getThisMonday(date) {
+        const dayOfWeek = date.getDay();
+        const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        const thisMonday = new Date(date);
+        thisMonday.setDate(thisMonday.getDate() - daysToMonday);
+        return thisMonday;
+      }
+
+      // 计算当前是第几周
+      function getWeekNumber(date) {
+        const startOfYear = new Date(date.getFullYear(), 0, 1);
+        const dayOfYear = Math.ceil(
+          (date - startOfYear) / (1000 * 60 * 60 * 24)
+        );
+        return Math.floor((dayOfYear - 1) / 7) + 1;
+      }
+
+      // 更新日期和周数
+      function updateDates() {
+        const today = new Date();
+        const monday = getThisMonday(today);
+        const weekNumber = getWeekNumber(today);
+
+        const weekInfo = document.getElementById("week-info");
+        const endOfWeek = new Date(monday);
+        endOfWeek.setDate(monday.getDate() + 6);
+        weekInfo.textContent = `第${weekNumber}周 ${formatDate(
+          monday
+        )} - ${formatDate(endOfWeek)}`;
+
+        const daysOfWeek = [
+          "monday",
+          "tuesday",
+          "wednesday",
+          "thursday",
+          "friday",
+          "saturday",
+          "sunday",
+        ];
+        const dayNames = [
+          "星期一",
+          "星期二",
+          "星期三",
+          "星期四",
+          "星期五",
+          "星期六",
+          "星期日",
+        ];
+        daysOfWeek.forEach((day, index) => {
+          const dateElement = document.getElementById(`${day}-date`);
+          const date = new Date(monday);
+          date.setDate(monday.getDate() + index);
+          const dayName = dayNames[index];
+          const formattedDate = formatDate(date);
+          const todayMarker =
+            index === today.getDay() - 1
+              ? '<span class="today-marker">今天</span>'
+              : "";
+          dateElement.innerHTML = `${dayName} ${formattedDate} ${todayMarker}`;
+        });
+      }
+
+      // 格式化日期为 MM.DD 格式
+      function formatDate(date) {
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        return `${month}.${day}`;
+      }
+
+      updateDates();
+      loadTasks();
+    </script>
+  </body>
+</html>
