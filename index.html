@@ -5,33 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>8宫格周视图</title>
     <style>
+      :root {
+        --primary-color: #4a90e2;
+        --secondary-color: #f5a623;
+        --background-color: #f7f9fc;
+        --card-background: #ffffff;
+        --text-color: #333333;
+        --border-radius: 12px;
+        --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s ease;
+      }
+
       body {
-        font-family: Arial, sans-serif;
-        background-color: #f5f5f5;
+        font-family: "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+        background-color: var(--background-color);
         margin: 0;
-        padding: 0;
-      }
-      .container {
-        max-width: 800px;
-        margin: 0 auto;
-        background-color: #fff;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      }
-      .header {
-        background-color: #fff;
         padding: 20px;
-        text-align: center;
-        border-bottom: 1px solid #ddd;
+        color: var(--text-color);
+        line-height: 1.6;
       }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background-color: var(--card-background);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--box-shadow);
+      }
+
+      .header {
+        background-color: var(--primary-color);
+        padding: 30px;
+        text-align: center;
+        color: white;
+      }
+
       .header h1 {
         margin: 0;
-        font-size: 24px;
+        font-size: 36px;
+        font-weight: 700;
+        letter-spacing: 1px;
       }
+
       .header p {
-        margin: 5px 0 0;
-        color: #888;
+        margin: 10px 0 0;
+        font-size: 18px;
+        opacity: 0.8;
       }
       .grid-container {
         display: grid;
@@ -40,15 +60,24 @@
         padding: 20px;
       }
       .task-section {
-        background-color: #f9f9f9;
-        border-radius: 10px;
+        background-color: var(--card-background);
+        border-radius: var(--border-radius);
         padding: 20px;
-        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-        position: relative;
+        box-shadow: var(--box-shadow);
+        transition: var(--transition);
       }
+
+      .task-section:hover {
+        transform: translateY(-5px);
+      }
+
       .task-section h2 {
-        font-size: 18px;
-        margin: 0 0 10px;
+        font-size: 20px;
+        margin: 0 0 15px;
+        color: var(--primary-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
       }
       .task-list {
         list-style: none;
